@@ -3,7 +3,7 @@ import numpy as np
 
 
 def test_incorrect_outputs_one_species():
-    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0, boundary_type='zero-flux')
 
     def reaction_func(u):
         return u, u  # Incorrect: returns two outputs instead of one
@@ -19,7 +19,7 @@ def test_incorrect_outputs_one_species():
 
 
 def test_incorrect_outputs_two_species():
-    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0, boundary_type='zero-flux')
 
     def reaction_func(u, v):
         return u  # Incorrect: returns one output instead of two
@@ -36,7 +36,7 @@ def test_incorrect_outputs_two_species():
 
 
 def test_correct_one_species():
-    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0, boundary_type='zero-flux')
 
     def reaction_func(u):
         return u * (1 - u)
@@ -50,7 +50,7 @@ def test_correct_one_species():
 
 
 def test_correct_two_species():
-    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0, boundary_type='zero-flux')
 
     def reaction_func(u, v):
         du = u * (1 - u) - u * v
@@ -67,7 +67,7 @@ def test_correct_two_species():
 
 
 def test_missing_diffusion_coefficients():
-    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0, boundary_type='zero-flux')
 
     def reaction_func(u):
         return u * (1 - u)
@@ -83,7 +83,7 @@ def test_missing_diffusion_coefficients():
 
 
 def test_mismatched_initial_conditions():
-    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0, boundary_type='zero-flux')
 
     def reaction_func(u):
         return u * (1 - u)
@@ -99,7 +99,7 @@ def test_mismatched_initial_conditions():
 
 
 def test_print_pde_one_species(capsys):
-    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0, boundary_type='zero-flux')
 
     def reaction_func(u):
         return u * (1 - u)
@@ -110,3 +110,12 @@ def test_print_pde_one_species(capsys):
 
     captured = capsys.readouterr()
     assert "∂u/∂t = 0.1 ∂²u/∂x² + u * (1 - u)" in captured.out
+
+
+def test_invalid_boundary_type():
+    try:
+        rd = ReactionDiffusion1D(L=10.0, dt=0.1, dx=1.0, boundary_type="invalid")
+    except ValueError as e:
+        assert str(e) == "Boundary type must be either 'zero-flux' or 'periodic'."
+    else:
+        assert False, "ValueError not raised for invalid boundary type"

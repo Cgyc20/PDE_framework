@@ -3,7 +3,7 @@ import inspect
 import matplotlib.pyplot as plt
 
 class ReactionDiffusion1D:
-    def __init__(self, L : float, dt: float, dx: float):
+    def __init__(self, L : float, dt: float, dx: float, boundary_type: str):
        
         assert isinstance(L, float), "Domain length must be a float."
         assert isinstance(dt, float), "Time step dt must be a float."
@@ -19,7 +19,18 @@ class ReactionDiffusion1D:
         self.reaction_func = None
         self.diffusion_coefficients = None
 
+        assert isinstance(boundary_type, str), "Boundary type must be a string."
+
+        if boundary_type != 'zero-flux' and boundary_type != 'periodic':
+            raise ValueError("Boundary type must be either 'zero-flux' or 'periodic'.")
+        else:
+            self.boundary_type = boundary_type
+
         assert self.n > 2, "Number of spatial points n must be greater than 2."
+
+        self.finite_difference_operator = self._build_finite_difference_matrix(boundary_type=self.boundary_type)
+
+
     def input_system(self, reaction_func: callable, diffusion_coefficients: list, u0: np.ndarray, v0: np.ndarray =None):
         # Check number of arguments
         num_args = len(inspect.signature(reaction_func).parameters)
@@ -61,9 +72,17 @@ class ReactionDiffusion1D:
                 )
             self.model_type = "two species model"
             # Test that reaction function returns exactly 2 outputs
+
+            
             test_out = reaction_func(self.u, self.v)
             if not (isinstance(test_out, tuple) and len(test_out) == 2):
                 raise ValueError("Two-species function must return exactly 2 outputs!")
+            
+            #The finite difference matrices
+            self.finite_difference_matrix_u = self.finite_difference_operator*(self.diffusion_coefficients[0]/self.dx**2)
+            self.finite_difference_matrix_v = self.finite_difference_operator*(self.diffusion_coefficients[1]/self.dx**2)
+
+            
             
         else:
 
@@ -74,6 +93,8 @@ class ReactionDiffusion1D:
             test_out = reaction_func(self.u)
             if isinstance(test_out, tuple):
                 raise ValueError("One-species function must return a single output!")
+
+            self.finite_difference_matrix_u = self.finite_difference_operator*(self.diffusion_coefficients[0]/self.dx**2)
 
         print(f"Detected: {self.model_type}")
 
