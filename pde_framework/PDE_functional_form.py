@@ -1,6 +1,7 @@
 import numpy as np
 import inspect
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 class ReactionDiffusion1D:
     def __init__(self, L : float, dt: float, dx: float, boundary_type: str):
@@ -301,5 +302,48 @@ class ReactionDiffusion1D:
             return self._two_species_simulation(total_time)
 
         
+    def save_data(self, u_record: np.ndarray, v_record: np.ndarray = None, filename: str ="simulation_data.npz"):
+        """
+        Saves the simulation data to a .npz file.
 
-    
+        Parameters:
+        -----------
+        u_record : np.ndarray
+            Recorded data for species u.
+        v_record : np.ndarray, optional (If there exists the species V)
+            Recorded data for species v.
+        filename : str
+            Name of the output file.
+        """
+        # Build save dictionary with simulation data and metadata
+        save_kwargs = {}
+        save_kwargs["u_record"] = u_record
+        if v_record is not None:
+            save_kwargs["v_record"] = v_record
+
+        # Add numerical and domain metadata (only include values that exist)
+        save_kwargs["L"] = self.L
+        save_kwargs["n"] = self.n
+        save_kwargs["dx"] = self.dx
+        save_kwargs["dt"] = self.dt
+        # boundary_type always set in __init__
+        save_kwargs["boundary_type"] = self.boundary_type
+        if self.diffusion_coefficients is not None:
+            save_kwargs["diffusion_coefficients"] = np.array(self.diffusion_coefficients)
+        if self.model_type is not None:
+            save_kwargs["model_type"] = self.model_type
+
+        # timevector may be set after running a simulation
+        if hasattr(self, "timevector") and self.timevector is not None:
+            save_kwargs["timevector"] = self.timevector
+
+        # Save initial conditions (the stored u/v are treated as initial states)
+        if self.u is not None:
+            save_kwargs["u0"] = self.u
+        if self.v is not None:
+            save_kwargs["v0"] = self.v
+
+        # Save everything in a compressed .npz archive
+        np.savez_compressed(filename, **save_kwargs)
+
+   

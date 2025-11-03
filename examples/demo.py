@@ -15,23 +15,27 @@ def main():
         return du, dv
 
     L = 1.0
-    dt = 0.01
+    dt = 0.0001
     dx = 0.01
 
     n = int(L // dx)
     # One-species model
-    model1 = ReactionDiffusion1D(L=1.0, dt=dt, dx=dx)
+    model1 = ReactionDiffusion1D(L=1.0, dt=dt, dx=dx, boundary_type='periodic')
     u0 = np.random.rand(n)
     model1.input_system(reaction_one_species, diffusion_coefficients=[0.1], u0=u0)
     print(model1.n)
     model1.print_system()
     # Two-species model
-    model2 = ReactionDiffusion1D(L=1.0, dt=dt, dx=dx)
+    model2 = ReactionDiffusion1D(L=1.0, dt=dt, dx=dx, boundary_type='periodic')
     u0 = np.random.rand(n)
     v0 = np.random.rand(n)
     model2.input_system(reaction_two_species, diffusion_coefficients=[0.1, 0.05], u0=u0, v0=v0)
     model2.print_system()
+    u_record, v_record = model2.run_simulation(total_time=1.0)
 
+    model2.save_data(u_record, v_record, filename='two_species_simulation.npz')
+
+    model2.animate_simulation(u_record, v_record, interval=50, save_path='two_species_simulation.gif')
 
 if __name__ == "__main__":
     main()
