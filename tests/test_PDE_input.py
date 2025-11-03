@@ -2,9 +2,8 @@ from pde_framework import ReactionDiffusion1D
 import numpy as np
 
 
-
 def test_incorrect_outputs_one_species():
-    rd = ReactionDiffusion1D(n = 100, dt = 0.1, dx = 1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
 
     def reaction_func(u):
         return u, u  # Incorrect: returns two outputs instead of one
@@ -20,7 +19,7 @@ def test_incorrect_outputs_one_species():
 
 
 def test_incorrect_outputs_two_species():
-    rd = ReactionDiffusion1D(n = 100, dt = 0.1, dx = 1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
 
     def reaction_func(u, v):
         return u  # Incorrect: returns one output instead of two
@@ -35,8 +34,9 @@ def test_incorrect_outputs_two_species():
     else:
         assert False, "ValueError not raised for incorrect outputs in two-species model"
 
+
 def test_correct_one_species():
-    rd = ReactionDiffusion1D(n=100, dt=0.1, dx=1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
 
     def reaction_func(u):
         return u * (1 - u)
@@ -50,7 +50,7 @@ def test_correct_one_species():
 
 
 def test_correct_two_species():
-    rd = ReactionDiffusion1D(n=100, dt=0.1, dx=1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
 
     def reaction_func(u, v):
         du = u * (1 - u) - u * v
@@ -67,7 +67,7 @@ def test_correct_two_species():
 
 
 def test_missing_diffusion_coefficients():
-    rd = ReactionDiffusion1D(n=100, dt=0.1, dx=1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
 
     def reaction_func(u):
         return u * (1 - u)
@@ -83,7 +83,7 @@ def test_missing_diffusion_coefficients():
 
 
 def test_mismatched_initial_conditions():
-    rd = ReactionDiffusion1D(n=100, dt=0.1, dx=1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
 
     def reaction_func(u):
         return u * (1 - u)
@@ -94,12 +94,12 @@ def test_mismatched_initial_conditions():
         rd.input_system(reaction_func, diffusion_coefficients=[0.1], u0=u0)
     except ValueError as e:
         assert "length" in str(e).lower()
-
     else:
         assert False, "ValueError not raised for mismatched u0 length"
 
+
 def test_print_pde_one_species(capsys):
-    rd = ReactionDiffusion1D(n=100, dt=0.1, dx=1.0)
+    rd = ReactionDiffusion1D(L=100.0, dt=0.1, dx=1.0)
 
     def reaction_func(u):
         return u * (1 - u)

@@ -3,14 +3,14 @@ import inspect
 import matplotlib.pyplot as plt
 
 class ReactionDiffusion1D:
-    def __init__(self, n : int, dt: float, dx: float):
-        assert n > 2, "Number of spatial points n must be greater than 2."
-        assert isinstance(n, int), "Number of spatial points n must be an integer."
+    def __init__(self, L : float, dt: float, dx: float):
+       
+        assert isinstance(L, float), "Domain length must be a float."
         assert isinstance(dt, float), "Time step dt must be a float."
         assert isinstance(dx, float), "Spatial step dx must be a float."
         
-
-        self.n = n
+        self.L = L
+        self.n = int(self.L // dx)
         self.dt = dt
         self.dx = dx
         self.u = None
@@ -19,6 +19,7 @@ class ReactionDiffusion1D:
         self.reaction_func = None
         self.diffusion_coefficients = None
 
+        assert self.n > 2, "Number of spatial points n must be greater than 2."
     def input_system(self, reaction_func: callable, diffusion_coefficients: list, u0: np.ndarray, v0: np.ndarray =None):
         # Check number of arguments
         num_args = len(inspect.signature(reaction_func).parameters)
