@@ -4,7 +4,21 @@ import matplotlib.pyplot as plt
 
 class ReactionDiffusion1D:
     def __init__(self, L : float, dt: float, dx: float, boundary_type: str):
-       
+        
+        """
+        Initializes a 1D reaction-diffusion PDE model. Up to two species supported.
+
+        Parameters:
+        -----------
+        L : float
+            Length of the 1D spatial domain.
+        dt: float
+            Timestep of the numerical scheme.
+        dx: float
+            Spatial step size.
+        boundary_type: str
+            Type of boundary condition ('zero-flux' or 'periodic').
+        """
         assert isinstance(L, float), "Domain length must be a float."
         assert isinstance(dt, float), "Time step dt must be a float."
         assert isinstance(dx, float), "Spatial step dx must be a float."
@@ -19,6 +33,8 @@ class ReactionDiffusion1D:
         self.reaction_func = None
         self.diffusion_coefficients = None
 
+
+
         assert isinstance(boundary_type, str), "Boundary type must be a string."
 
         if boundary_type != 'zero-flux' and boundary_type != 'periodic':
@@ -32,7 +48,19 @@ class ReactionDiffusion1D:
 
 
     def input_system(self, reaction_func: callable, diffusion_coefficients: list, u0: np.ndarray, v0: np.ndarray =None):
-        # Check number of arguments
+        """
+        Inputs the reaction function, diffusion coefficients, and initial conditions for the PDE system.
+
+        Parameters:
+        -----------
+        reaction_func : callable
+            Function defining the reaction terms. Should accept 1 or 2 arguments (for one or two species).
+        diffusion_coefficients : list
+            List of diffusion coefficients for each species.
+        u0 : np.ndarray
+            Initial condition for species u.
+        v0 : np.ndarray, optional (If there exists the species V)
+        """
         num_args = len(inspect.signature(reaction_func).parameters)
 
         assert isinstance(diffusion_coefficients,list), "Diffusion coefficients must be provided as a list."
@@ -168,6 +196,110 @@ class ReactionDiffusion1D:
                     A[i, i - 1] = 1
                     A[i, i + 1] = 1
             return A
+        
+    def RK4(self, u, v = None):
+        """
+        Performs a single RK4 timestep for the one-species model.
+
+        Parameters:
+        -----------
+        u : np.ndarray
+            Current state of species u.
+        v : np.ndarray, optional (If there exists the species V)
+        """
+
+        if v is None:
+            k1 = self.dt * (self.finite_difference_matrix_u @ u + self.reaction_func(u))
+            k2 = self.dt * (self.finite_difference_matrix_u @ (u + 0.5 * k1) + self.reaction_func(u + 0.5 * k1))
+            k3 = self.dt * (self.finite_difference_matrix_u @ (u + 0.5 * k2) + self.reaction_func(u + 0.5 * k2))
+            k4 = self.dt * (self.finite_difference_matrix_u @ (u + k3) + self.reaction_func(u + k3))
+
+            u_next = u + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+            return u_next
+        else: #Else we are basically going to run the two spcies simulation
+            k1_u = self.dt * (self.finite_difference_matrix_u @ u + self.reaction_func(u, v)[0])
+            k1_v = self.dt * (self.finite_difference_matrix_v @ v + self.reaction_func(u, v)[1])
+
+            k2_u = self.dt * (self.finite_difference_matrix_u @ (u + 0.5 * k1_u) + self.reaction_func(u + 0.5 * k1_u, v + 0.5 * k1_v)[0])
+            k2_v = self.dt * (self.finite_difference_matrix_v @ (v + 0.5 * k1_v) + self.reaction_func(u + 0.5 * k1_u, v + 0.5 * k1_v)[1])
+
+            k3_u = self.dt * (self.finite_difference_matrix_u @ (u + 0.5 * k2_u) + self.reaction_func(u + 0.5 * k2_u, v + 0.5 * k2_v)[0])
+            k3_v = self.dt * (self.finite_difference_matrix_v @ (v + 0.5 * k2_v) + self.reaction_func(u + 0.5 * k2_u, v + 0.5 * k2_v)[1])
+
+            k4_u = self.dt * (self.finite_difference_matrix_u @ (u + k3_u) + self.reaction_func(u + k3_u, v + k3_v)[0])
+            k4_v = self.dt * (self.finite_difference_matrix_v @ (v + k3_v) + self.reaction_func(u + k3_u, v + k3_v)[1])
+
+            u_next = u + (k1_u + 2 * k2_u + 2 * k3_u + k4_u) / 6
+            v_next = v + (k1_v + 2 * k2_v + 2 * k3_v + k4_v) / 6
+
+            return u_next, v_next
+    
+
+    def _one_species_simulation(self, total_time: float):
+        """
+        Runs the simulation for the single species model.
+
+        Parameters:
+        -----------
+        total_time : float
+            Total time to simulate.
+        """
+
+        self.timevector = np.arange(0, total_time, self.dt)
+
+        u_record = np.zeros((len(self.timevector), self.n))
+        u_record[0, :] = self.u.copy()
+        u_current = self.u.copy()
+        for t_idx in range(1, len(self.timevector)):
+            u_next = self.RK4(u_current)
+            u_record[t_idx, :] = u_next
+            u_current = u_next.copy()
+
+        return u_record
+    
+    def _two_species_simulation(self, total_time: float):
+        """
+        Runs the simulation for the two species model.
+
+        Parameters:
+        -----------
+        total_time : float
+            Total time to simulate.
+        """
+
+        self.timevector = np.arange(0, total_time, self.dt)
+
+        u_record = np.zeros((len(self.timevector), self.n))
+        v_record = np.zeros((len(self.timevector), self.n))
+        u_record[0, :] = self.u.copy()
+        v_record[0, :] = self.v.copy()
+        u_current = self.u.copy()
+        v_current = self.v.copy()
+        for t_idx in range(1, len(self.timevector)):
+            u_next, v_next = self.RK4(u_current, v_current)
+            u_record[t_idx, :] = u_next
+            v_record[t_idx, :] = v_next
+            u_current = u_next.copy()
+            v_current = v_next.copy()
+
+        return u_record, v_record
+    
+
+    def run_simulation(self, total_time: float):
+        """
+        Runs the simulation for the defined PDE system.
+
+        Parameters:
+        -----------
+        total_time : float
+            Total time to simulate.
+        """
+
+        if self.model_type == "one species model":
+            return self._one_species_simulation(total_time)
+        else:
+            return self._two_species_simulation(total_time)
+
         
 
     
