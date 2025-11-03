@@ -118,35 +118,35 @@ class ReactionDiffusion1D:
                 print(f"∂v/∂t = {D_v} ∂²v/∂x² + g(u,v)")
 
 
-def main():
+    def _build_finite_difference_matrix(self, boundary_type: str):
+        """
+        Builds the finite difference matrix depending on which boundary type we want.
+        """
 
+        if boundary_type == 'periodic':
+            # Periodic boundary conditions
+            A = np.zeros((self.n, self.n))
+            for i in range(self.n):
+                A[i, i] = -2
+                A[i, (i - 1) % self.n] = 1
+                A[i, (i + 1) % self.n] = 1
+            return A
+        
+        elif boundary_type == 'zero-flux':
+            # Zero-flux (Neumann) boundary conditions
+            A = np.zeros((self.n, self.n))
+            for i in range(self.n):
+                if i == 0:
+                    A[i, i] = -1
+                    A[i, i + 1] = 1
+                elif i == self.n - 1:
+                    A[i, i] = -1
+                    A[i, i - 1] = 1
+                else:
+                    A[i, i] = -2
+                    A[i, i - 1] = 1
+                    A[i, i + 1] = 1
+            return A
+        
 
-    # Example usage
-    def reaction_one_species(u):
-        return u * (1 - u)
-
-    def reaction_two_species(u, v):
-        du = u * (1 - u) - v * u
-        dv = v * (u - 0.5)
-        return du, dv
-
-    n = 100
-    dt = 0.01
-    dx = 1.0
-
-    # One-species model
-    model1 = ReactionDiffusion1D(n=n, dt=dt, dx=dx)
-    u0 = np.random.rand(n)
-    model1.input_system(reaction_one_species, diffusion_coefficients=[0.1], u0=u0)
-
-    model1.print_system()
-    # Two-species model
-    model2 = ReactionDiffusion1D(n=n, dt=dt, dx=dx)
-    u0 = np.random.rand(n)
-    v0 = np.random.rand(n)
-    model2.input_system(reaction_two_species, diffusion_coefficients=[0.1, 0.05], u0=u0, v0=v0)
-    model2.print_system()
-
-
-if __name__ == "__main__":
-    main()
+    

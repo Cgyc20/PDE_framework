@@ -16,5 +16,5 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 
 demo = "examples.demo:main"
-
+small_n = "examples.try_small_n:main"
 

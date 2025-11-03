@@ -16,7 +16,7 @@ def main():
 
     L = 1.0
     dt = 0.01
-    dx = 0.01
+    dx = 0.2
 
     n = int(L // dx)
     # One-species model
@@ -25,6 +25,8 @@ def main():
     model1.input_system(reaction_one_species, diffusion_coefficients=[0.1], u0=u0)
     print(model1.n)
     model1.print_system()
+    A = model1._build_finite_difference_matrix(boundary_type='zero-flux')
+    print(A)
     # Two-species model
     model2 = ReactionDiffusion1D(L=1.0, dt=dt, dx=dx)
     u0 = np.random.rand(n)
