@@ -3,7 +3,13 @@ import inspect
 import matplotlib.pyplot as plt
 
 class ReactionDiffusion1D:
-    def __init__(self, n=100, dt=0.1, dx=1.0):
+    def __init__(self, n : int, dt: float, dx: float):
+        assert n > 2, "Number of spatial points n must be greater than 2."
+        assert isinstance(n, int), "Number of spatial points n must be an integer."
+        assert isinstance(dt, float), "Time step dt must be a float."
+        assert isinstance(dx, float), "Spatial step dx must be a float."
+        
+
         self.n = n
         self.dt = dt
         self.dx = dx
@@ -13,9 +19,10 @@ class ReactionDiffusion1D:
         self.reaction_func = None
         self.diffusion_coefficients = None
 
-    def input_system(self, reaction_func, diffusion_coefficients, u0, v0=None):
+    def input_system(self, reaction_func: callable, diffusion_coefficients: list, u0: np.ndarray, v0: np.ndarray =None):
         # Check number of arguments
         num_args = len(inspect.signature(reaction_func).parameters)
+    
         if num_args > 2:
             raise ValueError("Reaction function can only have 1 or 2 input arguments!")
 

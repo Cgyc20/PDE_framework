@@ -4,7 +4,7 @@ import numpy as np
 
 
 def test_incorrect_outputs_one_species():
-    rd = ReactionDiffusion1D()
+    rd = ReactionDiffusion1D(n = 100, dt = 0.1, dx = 1.0)
 
     def reaction_func(u):
         return u, u  # Incorrect: returns two outputs instead of one
@@ -20,7 +20,7 @@ def test_incorrect_outputs_one_species():
 
 
 def test_incorrect_outputs_two_species():
-    rd = ReactionDiffusion1D()
+    rd = ReactionDiffusion1D(n = 100, dt = 0.1, dx = 1.0)
 
     def reaction_func(u, v):
         return u  # Incorrect: returns one output instead of two
