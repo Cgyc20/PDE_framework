@@ -133,4 +133,16 @@ if __name__ == "__main__":
         sys.exit(2)
 
     u, v, timevector = load_data(filename)
-    animate_1D(u, v, timevector=timevector)
+
+    # subsample frames
+    skip = 40
+    u = u[::skip]
+    if v is not None:
+        v = v[::skip]
+    if timevector is not None:
+        timevector = timevector[::skip]
+
+    animate_1D(u, v, timevector=timevector, interval=30)
+
+
+    

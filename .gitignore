@@ -1,1 +1,4 @@
 *.pyc
+two_species_simulation.gif
+.gitignore
+two_species_simulation.npz

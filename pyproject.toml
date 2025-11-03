@@ -17,4 +17,4 @@ build-backend = "poetry.core.masonry.api"
 
 demo = "examples.demo:main"
 small_n = "examples.try_small_n:main"
-
+switch = "examples.switching:main"
