@@ -16,7 +16,7 @@ def main():
 
     L = 1.0
     dt = 0.0001
-    dx = 0.01
+    dx = 0.005
 
     n = int(L // dx)
     # One-species model
@@ -24,13 +24,13 @@ def main():
     # Two-species model
     model2 = ReactionDiffusion1D(L=1.0, dt=dt, dx=dx, boundary_type='zero-flux')
     u0 = np.zeros(n)
-    u0[:n//4] = 1.0
+    u0[:n//4+1] = 1.0
     v0 = np.zeros(n)
     v0[3*n//4:] = 1.0
 
     model2.input_system(reaction_two_species, diffusion_coefficients=[0.01, 0.01], u0=u0, v0=v0)
     model2.print_system()
-    u_record, v_record = model2.run_simulation(total_time=2.0)
+    u_record, v_record = model2.run_simulation(total_time=10.0)
 
     model2.save_data(u_record, v_record, filename='two_species_simulation.npz')
 

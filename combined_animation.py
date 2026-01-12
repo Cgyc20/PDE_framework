@@ -17,7 +17,7 @@ u0 = 1.0
 v0 = 1.0
 N_terms = 200
 Nx = 200
-T_total = 2.0
+T_total = 10.0
 Nt = 100
 
 # Spatial and time arrays
@@ -170,6 +170,7 @@ def create_combined_animation(pde_filename=None):
     ax1.legend()
     ax1.axvline(x=0.25, color='blue', linestyle=':', alpha=0.5)
     ax1.axvline(x=0.75, color='red', linestyle=':', alpha=0.5)
+    ax1.axvline(x=0.5, color='black', linestyle=':', alpha=0.5)
     
     # Plot difference (PDE - Analytical) if available
     if pde_u is not None:
